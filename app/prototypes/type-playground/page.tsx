@@ -63,7 +63,7 @@ export default function TypePlayground() {
   const [experimentIntensity, setExperimentIntensity] = useState(50);
   const [experimentRadius, setExperimentRadius] = useState(150);
   const [experimentType, setExperimentType] = useState<'rotate' | 'shift' | 'scale' | 'skew' | 'wave' | 'explode' | 'magnetic' | 'bounce'>('rotate');
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+  const [cursorPos, setCursorPos] = useState({ x: -9999, y: -9999 });
   
   // Hover Glow Mode
   const [hoverGlowMode, setHoverGlowMode] = useState(false);
@@ -1837,11 +1837,19 @@ export default function TypePlayground() {
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width;
     canvas.height = rect.height;
+    
+    console.log('Experiment Mode Active:', {
+      type: experimentType,
+      intensity: experimentIntensity,
+      radius: experimentRadius,
+      canvasSize: { width: canvas.width, height: canvas.height },
+      cursorPos
+    });
 
     const drawExperimentText = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      ctx.font = `${currentStyle.fontWeight} ${currentStyle.fontSize}px "${selectedFont}"`;
+      ctx.font = `${currentStyle.fontWeight} ${currentStyle.fontSize}px "${selectedFont}", Arial, sans-serif`;
       // Make text prominent and black for better visibility
       ctx.fillStyle = themeMode === 'dark' ? '#ffffff' : '#000000';
       ctx.globalAlpha = 1;
@@ -1951,12 +1959,19 @@ export default function TypePlayground() {
 
     // Continuous animation for wave and bounce
     if (experimentType === 'wave' || experimentType === 'bounce') {
-      const animationId = requestAnimationFrame(() => drawExperimentText());
-      return () => cancelAnimationFrame(animationId);
+      let animationId: number;
+      const animate = () => {
+        drawExperimentText();
+        animationId = requestAnimationFrame(animate);
+      };
+      animate();
+      return () => {
+        if (animationId) cancelAnimationFrame(animationId);
+      };
     } else {
       drawExperimentText();
     }
-  }, [text, selectedFont, currentStyle, experimentMode, experimentIntensity, experimentRadius, experimentType, cursorPos]);
+  }, [text, selectedFont, currentStyle, experimentMode, experimentIntensity, experimentRadius, experimentType, cursorPos, themeMode]);
 
   return (
     <div className={`${styles.container} ${
