@@ -76,6 +76,23 @@ export default function TypePlayground() {
   const [gridSize, setGridSize] = useState(20);
   const [dotSize, setDotSize] = useState(6);
   
+  // Type Creature Mode
+  const [creatureMode, setCreatureMode] = useState(false);
+  const [creatureMood, setCreatureMood] = useState(0);
+  const [creatureMessages, setCreatureMessages] = useState<string[]>([]);
+  const [lastParamChange, setLastParamChange] = useState(Date.now());
+  
+  // Glitch Mode
+  const [glitchMode, setGlitchMode] = useState(false);
+  const [glitchedText, setGlitchedText] = useState('');
+  const [glitchTimer, setGlitchTimer] = useState(10);
+  const [glitchActive, setGlitchActive] = useState(false);
+  const glitchTimerRef = useRef<number | null>(null);
+  
+  // Animation Timeline
+  const [timelineIsPlaying, setTimelineIsPlaying] = useState(false);
+  const [playbackProgress, setPlaybackProgress] = useState(0);
+  
   // Features section collapsed state
   const [featuresExpanded, setFeaturesExpanded] = useState(true);
   const [videoSupported, setVideoSupported] = useState(true);
@@ -228,6 +245,114 @@ export default function TypePlayground() {
     }
   };
 
+  // Type Creature Functions
+  const addCreatureMessage = (message: string) => {
+    setCreatureMessages(prev => [...prev.slice(-2), message]);
+    setTimeout(() => {
+      setCreatureMessages(prev => prev.filter(m => m !== message));
+    }, 3000);
+  };
+
+  const feedCreature = () => {
+    setCreatureMood(prev => Math.min(prev + 10, 100));
+    const messages = [
+      '>> TYPE_CREATURE_HUNGRY',
+      '>> FEEDING... PARAMETERS DIGESTED.',
+      '>> CREATURE_EVOLVING... COMPLETE.',
+      '>> MOOD STABILIZING...',
+      '>> CREATURE_CONTENT'
+    ];
+    addCreatureMessage(messages[Math.floor(Math.random() * messages.length)]);
+    addXP(5, 'Fed creature');
+  };
+
+  // Glitch Mode Functions
+  const scrambleText = (originalText: string): string => {
+    const chars = originalText.split('');
+    for (let i = chars.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [chars[i], chars[j]] = [chars[j], chars[i]];
+    }
+    // Add occasional missing glyphs
+    return chars.map(c => Math.random() > 0.9 ? '█' : c).join('');
+  };
+
+  const activateGlitch = () => {
+    if (glitchActive) return;
+    
+    setGlitchActive(true);
+    setGlitchedText(scrambleText(text));
+    setGlitchTimer(10);
+    addCreatureMessage('>> SYSTEM_ERROR: TEXT_CORRUPTED');
+    addCreatureMessage('>> RESTORE ORDER USING SLIDERS OR KEYS');
+    
+    // Start countdown
+    if (glitchTimerRef.current) clearInterval(glitchTimerRef.current);
+    glitchTimerRef.current = window.setInterval(() => {
+      setGlitchTimer(prev => {
+        if (prev <= 1) {
+          resetGlitch();
+          return 10;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const checkGlitchRestored = () => {
+    if (glitchedText === text) {
+      if (glitchTimerRef.current) clearInterval(glitchTimerRef.current);
+      setGlitchActive(false);
+      addCreatureMessage('>> ORDER RESTORED. BONUS: +10 XP');
+      addXP(10, 'Restored glitched text');
+      increaseCombo();
+    }
+  };
+
+  const resetGlitch = () => {
+    if (glitchTimerRef.current) clearInterval(glitchTimerRef.current);
+    setGlitchActive(false);
+    setGlitchedText('');
+    addCreatureMessage('>> SYSTEM REBOOTING...');
+  };
+
+  // Timeline Animation Functions
+  const interpolateProperties = (prop1: Partial<StyleProperties>, prop2: Partial<StyleProperties>, t: number): StyleProperties => {
+    const result: any = {};
+    const keys = new Set([...Object.keys(prop1), ...Object.keys(prop2)]) as Set<keyof StyleProperties>;
+    
+    keys.forEach(key => {
+      const val1 = prop1[key] ?? currentStyle[key];
+      const val2 = prop2[key] ?? currentStyle[key];
+      
+      if (typeof val1 === 'number' && typeof val2 === 'number') {
+        result[key] = val1 + (val2 - val1) * t;
+      } else {
+        result[key] = t < 0.5 ? val1 : val2;
+      }
+    });
+    
+    return { ...currentStyle, ...result };
+  };
+
+  const playTimeline = () => {
+    if (keyframes.length < 2) {
+      addCreatureMessage('>> ERROR: NEED 2+ KEYFRAMES TO PLAY');
+      return;
+    }
+    
+    setTimelineIsPlaying(true);
+    setPlaybackProgress(0);
+    addCreatureMessage('>> PLAYBACK_INITIATED');
+    addXP(5, 'Started timeline playback');
+  };
+
+  const stopTimeline = () => {
+    setTimelineIsPlaying(false);
+    setPlaybackProgress(0);
+    addCreatureMessage('>> PLAYBACK_STOPPED');
+  };
+
   // Check achievements whenever stats change
   useEffect(() => {
     checkAchievements();
@@ -249,6 +374,74 @@ export default function TypePlayground() {
     const randomChallenge = challenges[Math.floor(Math.random() * challenges.length)];
     setDailyChallenge(randomChallenge);
   }, []);
+
+  // Type Creature mood decay
+  useEffect(() => {
+    if (!creatureMode) return;
+    
+    const interval = setInterval(() => {
+      setCreatureMood(prev => Math.max(prev - 1, 0));
+      if (creatureMood < 20) {
+        addCreatureMessage('>> TYPE_CREATURE_HUNGRY');
+      }
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, [creatureMode, creatureMood]);
+
+  // Track parameter changes for creature feeding
+  useEffect(() => {
+    if (!creatureMode) return;
+    setLastParamChange(Date.now());
+    feedCreature();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStyle, selectedFont, text]);
+
+  // Check if glitch is restored
+  useEffect(() => {
+    if (glitchActive) {
+      checkGlitchRestored();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [text, glitchActive]);
+
+  // Timeline playback animation
+  useEffect(() => {
+    if (!timelineIsPlaying || keyframes.length < 2) return;
+    
+    const sortedKeyframes = [...keyframes].sort((a, b) => a.time - b.time);
+    const maxTime = sortedKeyframes[sortedKeyframes.length - 1].time;
+    const startTime = Date.now();
+    
+    const animate = () => {
+      const elapsed = (Date.now() - startTime) / 1000;
+      const progress = Math.min(elapsed / maxTime, 1);
+      setPlaybackProgress(progress * 100);
+      
+      // Find current keyframe segment
+      for (let i = 0; i < sortedKeyframes.length - 1; i++) {
+        const kf1 = sortedKeyframes[i];
+        const kf2 = sortedKeyframes[i + 1];
+        
+        if (elapsed >= kf1.time && elapsed < kf2.time) {
+          const segmentProgress = (elapsed - kf1.time) / (kf2.time - kf1.time);
+          const interpolated = interpolateProperties(kf1.properties, kf2.properties, segmentProgress);
+          setCurrentStyle(interpolated);
+          break;
+        }
+      }
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        stopTimeline();
+      }
+    };
+    
+    const animId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timelineIsPlaying, keyframes]);
 
   // Check video export support
   useEffect(() => {
@@ -1641,6 +1834,86 @@ export default function TypePlayground() {
                 </label>
               </div>
 
+              {/* Creature Mode & Glitch Mode Buttons */}
+              <div className={styles.featureButtons}>
+                <button
+                  className={`${styles.featureButton} ${creatureMode ? styles.featureButtonActive : ''}`}
+                  onClick={() => {
+                    setCreatureMode(!creatureMode);
+                    if (!creatureMode) {
+                      addCreatureMessage('>> TYPE_CREATURE_AWAKENED');
+                      addXP(10, 'Activated Creature Mode');
+                      increaseCombo();
+                    } else {
+                      addCreatureMessage('>> TYPE_CREATURE_SLEEPING');
+                    }
+                  }}
+                >
+                  {themeMode === 'error' ? '[ > FEED_TYPE_CREATURE ]' : '🦎 Feed Type Creature'}
+                </button>
+
+                <button
+                  className={`${styles.featureButton} ${glitchMode ? styles.featureButtonActive : ''}`}
+                  onClick={() => {
+                    setGlitchMode(!glitchMode);
+                    if (!glitchMode) {
+                      addCreatureMessage('>> GLITCH_MODE_ENABLED');
+                      addXP(10, 'Enabled Glitch Mode');
+                    } else {
+                      resetGlitch();
+                      addCreatureMessage('>> GLITCH_MODE_DISABLED');
+                    }
+                  }}
+                >
+                  {themeMode === 'error' ? '[ > ENTER_GLITCH_MODE ]' : '⚡ Enter Glitch Mode'}
+                </button>
+
+                {glitchMode && !glitchActive && (
+                  <button
+                    className={styles.activateGlitchButton}
+                    onClick={activateGlitch}
+                  >
+                    {themeMode === 'error' ? '[ TRIGGER_CORRUPTION ]' : '💥 Trigger Glitch'}
+                  </button>
+                )}
+
+                {glitchActive && (
+                  <div className={styles.glitchTimer}>
+                    {themeMode === 'error' ? `>> TIME_REMAINING: ${glitchTimer}s` : `⏱️ ${glitchTimer}s`}
+                  </div>
+                )}
+              </div>
+
+              {/* Creature Mood Meter */}
+              {creatureMode && (
+                <div className={styles.creatureMoodMeter}>
+                  <div className={styles.moodLabel}>
+                    {themeMode === 'error' ? '>> CREATURE_MOOD:' : '💚 Creature Mood:'}
+                  </div>
+                  <div className={styles.moodBar}>
+                    <div 
+                      className={styles.moodBarFill} 
+                      style={{ 
+                        width: `${creatureMood}%`,
+                        backgroundColor: creatureMood > 60 ? '#00ff00' : creatureMood > 30 ? '#ffff00' : '#ff0000'
+                      }}
+                    />
+                  </div>
+                  <div className={styles.moodValue}>{creatureMood}%</div>
+                </div>
+              )}
+
+              {/* Creature Messages Console */}
+              {creatureMessages.length > 0 && (
+                <div className={styles.creatureConsole}>
+                  {creatureMessages.map((msg, i) => (
+                    <div key={i} className={styles.consoleMessage}>
+                      {msg}
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Particle Controls */}
               {enableParticles && (
                 <div className={styles.featureControls}>
@@ -1933,7 +2206,7 @@ export default function TypePlayground() {
           {!enableParticles && !experimentMode && !hoverGlowMode && !gridDotMode && (
             <div
               ref={textPreviewRef}
-              className={styles.textPreview}
+              className={`${styles.textPreview} ${creatureMode ? styles.creatureText : ''} ${glitchActive ? styles.glitchText : ''}`}
               style={{
                 fontFamily: selectedFont,
                 fontSize: `${currentStyle.fontSize}px`,
@@ -1952,10 +2225,12 @@ export default function TypePlayground() {
                 top: '50%',
                 position: 'absolute',
                 whiteSpace: 'pre-wrap',
-                textAlign: 'center'
+                textAlign: 'center',
+                textShadow: creatureMode ? `0 0 ${Math.sin(Date.now() / 500) * 10}px ${currentStyle.color}` : 'none',
+                animation: glitchActive ? `${styles.glitchAnimation} 0.3s infinite` : 'none'
               }}
             >
-              {text}
+              {glitchActive ? glitchedText : text}
             </div>
           )}
           
@@ -2057,7 +2332,10 @@ export default function TypePlayground() {
               </button>
               <button
                 className={styles.controlButton}
-                onClick={addKeyframe}
+                onClick={() => {
+                  addKeyframe();
+                  addCreatureMessage(`>> KEYFRAME_STORED [t=${currentTime.toFixed(2)}s]`);
+                }}
                 onMouseMove={(e) => {
                   const rect = e.currentTarget.getBoundingClientRect();
                   const x = e.clientX - rect.left;
@@ -2070,11 +2348,55 @@ export default function TypePlayground() {
                   e.currentTarget.style.setProperty('--mouse-y', `50%`);
                 }}
               >
-                + Keyframe
+                {themeMode === 'error' ? '[ + KEYFRAME ]' : '+ Keyframe'}
+              </button>
+              <button
+                className={`${styles.controlButton} ${timelineIsPlaying ? styles.controlButtonActive : ''}`}
+                onClick={playTimeline}
+                disabled={timelineIsPlaying}
+                onMouseMove={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  const y = e.clientY - rect.top;
+                  e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
+                  e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.setProperty('--mouse-x', `50%`);
+                  e.currentTarget.style.setProperty('--mouse-y', `50%`);
+                }}
+              >
+                {themeMode === 'error' ? '[ ▶ PLAY ]' : '▶ Play'}
+              </button>
+              <button
+                className={styles.controlButton}
+                onClick={stopTimeline}
+                disabled={!timelineIsPlaying}
+                onMouseMove={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  const y = e.clientY - rect.top;
+                  e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
+                  e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.setProperty('--mouse-x', `50%`);
+                  e.currentTarget.style.setProperty('--mouse-y', `50%`);
+                }}
+              >
+                {themeMode === 'error' ? '[ ⏹ STOP ]' : '⏹ Stop'}
               </button>
               <div className={styles.timeDisplay}>
                 {currentTime.toFixed(2)}s / {duration}s
               </div>
+              {timelineIsPlaying && (
+                <div className={styles.playbackProgressBar}>
+                  <div 
+                    className={styles.playbackProgressFill} 
+                    style={{ width: `${playbackProgress}%` }}
+                  />
+                </div>
+              )}
               <button
                 className={styles.hideTimelineButton}
                 onClick={() => setShowTimeline(false)}

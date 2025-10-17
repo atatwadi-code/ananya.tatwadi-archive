@@ -2112,3 +2112,363 @@
 .darkMode .keyframeList::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.25);
 }
+
+/* ========================================
+   NEW FEATURES: Creature Mode, Glitch Mode, Timeline
+   ======================================== */
+
+/* Feature Buttons Section */
+.featureButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.featureButton {
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+}
+
+.featureButton:hover {
+  background: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.featureButtonActive {
+  background: rgba(99, 102, 241, 0.3);
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+}
+
+.activateGlitchButton {
+  padding: 10px 14px;
+  background: rgba(239, 68, 68, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.activateGlitchButton:hover {
+  background: rgba(239, 68, 68, 0.4);
+  transform: scale(1.05);
+}
+
+.glitchTimer {
+  padding: 10px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  animation: pulse 1s infinite;
+}
+
+/* Error Mode Styles for New Features */
+.errorMode .featureButtons {
+  border-top: 1px dotted #000000;
+}
+
+.errorMode .featureButton {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid #000000;
+  border-radius: 0;
+  color: #000000;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.errorMode .featureButton:hover {
+  background: rgba(0, 0, 0, 0.9);
+  color: #CCFF00;
+  transform: translateY(-1px);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 1);
+}
+
+.errorMode .featureButtonActive {
+  background: #000000;
+  color: #CCFF00;
+  border-color: #CCFF00;
+  box-shadow: 0 0 10px rgba(204, 255, 0, 0.5), 2px 2px 0 rgba(0, 0, 0, 0.8);
+}
+
+.errorMode .activateGlitchButton {
+  background: rgba(255, 0, 0, 0.3);
+  border: 2px solid #000000;
+  border-radius: 0;
+  color: #000000;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+  font-family: 'Courier New', monospace;
+}
+
+.errorMode .activateGlitchButton:hover {
+  background: #ff0000;
+  color: #000000;
+}
+
+.errorMode .glitchTimer {
+  background: rgba(255, 0, 0, 0.2);
+  border: 1px solid #000000;
+  border-radius: 0;
+  color: #000000;
+  font-family: 'Courier New', monospace;
+}
+
+/* Creature Mood Meter */
+.creatureMoodMeter {
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 10px;
+}
+
+.moodLabel {
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.moodBar {
+  height: 18px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 9px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 6px;
+}
+
+.moodBarFill {
+  height: 100%;
+  border-radius: 9px;
+  transition: width 0.5s ease, background-color 0.3s ease;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.moodValue {
+  font-size: 10px;
+  font-weight: 700;
+  text-align: right;
+  opacity: 0.7;
+}
+
+.errorMode .creatureMoodMeter {
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid #000000;
+  border-radius: 0;
+}
+
+.errorMode .moodLabel {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+}
+
+.errorMode .moodBar {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid #000000;
+  border-radius: 0;
+}
+
+.errorMode .moodBarFill {
+  border-radius: 0;
+  border-right: 1px solid #000000;
+}
+
+/* Creature Messages Console */
+.creatureConsole {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  min-height: 60px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.consoleMessage {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #059669;
+  margin-bottom: 4px;
+  line-height: 1.4;
+  animation: fadeIn 0.3s ease;
+}
+
+.errorMode .creatureConsole {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid #000000;
+  border-radius: 0;
+}
+
+.errorMode .consoleMessage {
+  color: #000000;
+  font-weight: bold;
+}
+
+/* Creature Text Animation */
+.creatureText {
+  animation: breathe 3s ease-in-out infinite, wobble 2s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes wobble {
+  0%, 100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  25% {
+    transform: translateX(-2px) rotate(-0.5deg);
+  }
+  75% {
+    transform: translateX(2px) rotate(0.5deg);
+  }
+}
+
+/* Glitch Text Animation */
+.glitchText {
+  animation: glitchAnimation 0.3s infinite;
+}
+
+@keyframes glitchAnimation {
+  0%, 100% {
+    transform: translateX(0);
+    text-shadow: 0 0 0 transparent;
+  }
+  20% {
+    transform: translateX(-3px);
+    text-shadow: 3px 0 #ff0000, -3px 0 #00ffff;
+  }
+  40% {
+    transform: translateX(3px);
+    text-shadow: -3px 0 #ff0000, 3px 0 #00ffff;
+  }
+  60% {
+    transform: translateY(-2px);
+    text-shadow: 0 3px #ff0000, 0 -3px #00ffff;
+  }
+  80% {
+    transform: translateY(2px);
+    text-shadow: 0 -3px #ff0000, 0 3px #00ffff;
+  }
+}
+
+/* Timeline Playback Progress Bar */
+.playbackProgressBar {
+  height: 4px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-left: 12px;
+  flex: 1;
+  max-width: 200px;
+}
+
+.playbackProgressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  border-radius: 2px;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+}
+
+.errorMode .playbackProgressBar {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid #000000;
+  border-radius: 0;
+}
+
+.errorMode .playbackProgressFill {
+  background: #CCFF00;
+  border-radius: 0;
+  box-shadow: 0 0 8px rgba(204, 255, 0, 0.7);
+}
+
+.controlButtonActive {
+  background: rgba(99, 102, 241, 0.3) !important;
+  border-color: rgba(99, 102, 241, 0.5) !important;
+}
+
+.errorMode .controlButtonActive {
+  background: #000000 !important;
+  color: #CCFF00 !important;
+  border-color: #CCFF00 !important;
+}
+
+/* Dark Mode Adjustments */
+.darkMode .featureButton {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+}
+
+.darkMode .featureButton:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.darkMode .featureButtonActive {
+  background: rgba(139, 92, 246, 0.3);
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
+.darkMode .creatureMoodMeter {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.darkMode .moodLabel {
+  color: #cbd5e1;
+}
+
+.darkMode .moodBar {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.darkMode .creatureConsole {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.darkMode .consoleMessage {
+  color: #6ee7b7;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
