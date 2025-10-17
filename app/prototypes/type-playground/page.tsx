@@ -791,26 +791,55 @@ export default function TypePlayground() {
     let animationId: number;
     let mouthOpen = true;
     let mouthOpenness = 0;
+    let fontReady = false;
+
+    // Load the selected font before rendering
+    const fontString = `${currentStyle.fontWeight} ${currentStyle.fontSize}px "${selectedFont}"`;
+    const smallFontString = `600 ${Math.max(12, currentStyle.fontSize * 0.4)}px "${selectedFont}"`;
+    
+    console.log('Feed Game: Loading font:', selectedFont, 'Font string:', fontString);
+    
+    // Load both fonts (main and stats)
+    Promise.all([
+      document.fonts.load(fontString),
+      document.fonts.load(smallFontString)
+    ]).then(() => {
+      fontReady = true;
+      console.log('Feed Game: Font loaded successfully:', selectedFont);
+    }).catch((error) => {
+      // Font loading failed, but continue anyway with fallback
+      console.warn('Feed Game: Font loading failed, using fallback:', error);
+      fontReady = true;
+    });
+    
+    // Also check if font is already ready
+    if (document.fonts.check(fontString)) {
+      fontReady = true;
+      console.log('Feed Game: Font already ready:', selectedFont);
+    }
 
     const animate = () => {
       // Neon lime background
       ctx.fillStyle = '#d7fc00';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw letters - use selected font and current style
-      ctx.font = `${currentStyle.fontWeight} ${currentStyle.fontSize}px "${selectedFont}"`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = currentStyle.color;
-      ctx.globalAlpha = currentStyle.opacity / 100;
+      // Only render text if font is ready
+      if (fontReady) {
+        // Draw letters - use selected font and current style
+        ctx.font = `${currentStyle.fontWeight} ${currentStyle.fontSize}px "${selectedFont}"`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = currentStyle.color;
+        ctx.globalAlpha = currentStyle.opacity / 100;
 
-      gameLetters.forEach(letter => {
-        if (!letter.consumed) {
-          ctx.fillText(letter.char, letter.x, letter.y);
-        }
-      });
-      
-      ctx.globalAlpha = 1;
+        gameLetters.forEach(letter => {
+          if (!letter.consumed) {
+            ctx.fillText(letter.char, letter.x, letter.y);
+          }
+        });
+        
+        ctx.globalAlpha = 1;
+      }
 
       // Draw creature (Pac-Man)
       const creatureSize = 20 + (creatureGrowthLevel * 5);
@@ -862,11 +891,13 @@ export default function TypePlayground() {
       ctx.fill();
 
       // Draw minimal stats in corner
-      ctx.font = `600 ${Math.max(12, currentStyle.fontSize * 0.4)}px "${selectedFont}"`;
-      ctx.fillStyle = currentStyle.color;
-      ctx.textAlign = 'left';
-      const remaining = gameLetters.filter(l => !l.consumed).length;
-      ctx.fillText(`LVL ${creatureGrowthLevel} | ${remaining} LEFT`, 15, 30);
+      if (fontReady) {
+        ctx.font = `600 ${Math.max(12, currentStyle.fontSize * 0.4)}px "${selectedFont}"`;
+        ctx.fillStyle = currentStyle.color;
+        ctx.textAlign = 'left';
+        const remaining = gameLetters.filter(l => !l.consumed).length;
+        ctx.fillText(`LVL ${creatureGrowthLevel} | ${remaining} LEFT`, 15, 30);
+      }
 
       animationId = requestAnimationFrame(animate);
     };
