@@ -928,53 +928,46 @@ export default function TypePlayground() {
     const allFonts = [...googleFonts, ...customFonts];
     const fontData = allFonts.find(f => f.family === selectedFont);
     
+    // Don't load if custom font (already loaded via FontFace API)
     if (fontData?.source === 'custom' && fontData.customUrl) {
-      // Custom font already loaded via FontFace API
       return;
-    } else if (fontData?.source === 'fontshare') {
-      // Load from Fontshare CDN
-      const link = document.createElement('link');
-      link.href = `https://api.fontshare.com/v2/css?f[]=${selectedFont.toLowerCase().replace(/\s+/g, '-')}@400,700&display=swap`;
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-      
-      // Wait for font to load
-      link.onload = () => {
-        document.fonts.ready.then(() => {
-          // Force re-render by triggering a small style update
-          const preview = textPreviewRef.current;
-          if (preview) {
-            preview.style.fontFamily = `"${selectedFont}", sans-serif`;
-          }
-        });
-      };
-      
-      return () => {
-        document.head.removeChild(link);
-      };
-    } else {
-      // Load from Google Fonts
-      const link = document.createElement('link');
-      link.href = `https://fonts.googleapis.com/css2?family=${selectedFont.replace(/\s+/g, '+')}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-      
-      // Wait for font to load
-      link.onload = () => {
-        document.fonts.ready.then(() => {
-          // Force re-render by triggering a small style update
-          const preview = textPreviewRef.current;
-          if (preview) {
-            preview.style.fontFamily = `"${selectedFont}", sans-serif`;
-          }
-        });
-      };
-      
-      return () => {
-        document.head.removeChild(link);
-      };
     }
-  }, [selectedFont, googleFonts, customFonts]);
+    
+    // Determine font source
+    const isFontshare = fontData?.source === 'fontshare';
+    
+    // Create link element
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    
+    if (isFontshare) {
+      // Fontshare CDN
+      link.href = `https://api.fontshare.com/v2/css?f[]=${selectedFont.toLowerCase().replace(/\s+/g, '-')}@400,700&display=swap`;
+    } else {
+      // Google Fonts (default for all fonts not explicitly marked as fontshare)
+      link.href = `https://fonts.googleapis.com/css2?family=${selectedFont.replace(/\s+/g, '+')}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
+    }
+    
+    // Add to document
+    document.head.appendChild(link);
+    
+    // Wait for font to load and apply it
+    link.onload = () => {
+      document.fonts.ready.then(() => {
+        const preview = textPreviewRef.current;
+        if (preview) {
+          preview.style.fontFamily = `"${selectedFont}", sans-serif`;
+        }
+      });
+    };
+    
+    // Cleanup
+    return () => {
+      if (link.parentNode) {
+        document.head.removeChild(link);
+      }
+    };
+  }, [selectedFont]);
 
   // Animation playback
   useEffect(() => {
