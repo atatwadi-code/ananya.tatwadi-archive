@@ -2320,24 +2320,8 @@ export default function TypePlayground() {
                 </label>
               </div>
 
-              {/* Creature Mode & Glitch Mode Buttons */}
+              {/* Game Mode Buttons */}
               <div className={styles.featureButtons}>
-                <button
-                  className={`${styles.featureButton} ${creatureMode ? styles.featureButtonActive : ''}`}
-                  onClick={() => {
-                    setCreatureMode(!creatureMode);
-                    if (!creatureMode) {
-                      addCreatureMessage('>> TYPE_CREATURE_AWAKENED');
-                      addXP(10, 'Activated Creature Mode');
-                      increaseCombo();
-                    } else {
-                      addCreatureMessage('>> TYPE_CREATURE_SLEEPING');
-                    }
-                  }}
-                >
-                  {themeMode === 'error' ? '[ > FEED_TYPE_CREATURE ]' : '🦎 Feed Type Creature'}
-                </button>
-
                 <button
                   className={`${styles.featureButton} ${glitchMode ? styles.featureButtonActive : ''}`}
                   onClick={() => {
@@ -2382,25 +2366,6 @@ export default function TypePlayground() {
                   </div>
                 )}
               </div>
-
-              {/* Creature Mood Meter */}
-              {creatureMode && (
-                <div className={styles.creatureMoodMeter}>
-                  <div className={styles.moodLabel}>
-                    {themeMode === 'error' ? '>> CREATURE_MOOD:' : '💚 Creature Mood:'}
-                  </div>
-                  <div className={styles.moodBar}>
-                    <div 
-                      className={styles.moodBarFill} 
-                      style={{ 
-                        width: `${creatureMood}%`,
-                        backgroundColor: creatureMood > 60 ? '#00ff00' : creatureMood > 30 ? '#ffff00' : '#ff0000'
-                      }}
-                    />
-                  </div>
-                  <div className={styles.moodValue}>{creatureMood}%</div>
-                </div>
-              )}
 
               {/* Creature Messages Console */}
               {creatureMessages.length > 0 && (
@@ -2826,13 +2791,6 @@ export default function TypePlayground() {
                 setIsDraggingDot(false);
                 setSelectedDot(null);
               }}
-            />
-          )}
-          
-          {creatureMode && (
-            <canvas
-              ref={creatureCanvasRef}
-              className={styles.particleCanvas}
             />
           )}
           
