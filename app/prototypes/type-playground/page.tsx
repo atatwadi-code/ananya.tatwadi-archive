@@ -943,7 +943,7 @@ export default function TypePlayground() {
     } else {
       // Load from Google Fonts
       const link = document.createElement('link');
-      link.href = `https://fonts.googleapis.com/css2?family=${selectedFont.replace(' ', '+')}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
+      link.href = `https://fonts.googleapis.com/css2?family=${selectedFont.replace(/\s+/g, '+')}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
       link.rel = 'stylesheet';
       document.head.appendChild(link);
       return () => {
@@ -1130,7 +1130,7 @@ export default function TypePlayground() {
     ctx.scale(frameStyle.scaleX, frameStyle.scaleY);
     ctx.globalAlpha = frameStyle.opacity;
 
-    ctx.font = `${frameStyle.fontWeight} ${frameStyle.fontSize}px ${selectedFont}`;
+    ctx.font = `${frameStyle.fontWeight} ${frameStyle.fontSize}px "${selectedFont}"`;
     ctx.fillStyle = frameStyle.color;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -1419,7 +1419,7 @@ export default function TypePlayground() {
     canvas.height = 400;
     
     ctx.fillStyle = '#000000';
-    ctx.font = `${currentStyle.fontWeight} ${currentStyle.fontSize * 2}px ${selectedFont}`;
+    ctx.font = `${currentStyle.fontWeight} ${currentStyle.fontSize * 2}px "${selectedFont}"`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(text, canvas.width / 2, canvas.height / 2);
@@ -1612,7 +1612,7 @@ export default function TypePlayground() {
       ctx.globalCompositeOperation = 'destination-over';
       
       // Draw text
-      ctx.font = `${currentStyle.fontWeight} ${currentStyle.fontSize}px ${selectedFont}`;
+      ctx.font = `${currentStyle.fontWeight} ${currentStyle.fontSize}px "${selectedFont}"`;
       ctx.fillStyle = currentStyle.color;
       ctx.globalAlpha = currentStyle.opacity / 100;
       ctx.textAlign = 'center';
@@ -1765,7 +1765,7 @@ export default function TypePlayground() {
     const drawExperimentText = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      ctx.font = `${currentStyle.fontWeight} ${currentStyle.fontSize}px ${selectedFont}`;
+      ctx.font = `${currentStyle.fontWeight} ${currentStyle.fontSize}px "${selectedFont}"`;
       ctx.fillStyle = currentStyle.color;
       ctx.globalAlpha = currentStyle.opacity / 100;
       ctx.textBaseline = 'middle';
