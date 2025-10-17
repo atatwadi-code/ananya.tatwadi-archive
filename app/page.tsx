@@ -23,7 +23,12 @@ export default function Home() {
       name: 'Tasks',
       description: 'A to do list app',
       href: '/prototypes/tasks',
-    },  
+    },
+    {
+      name: 'Type Playground',
+      description: 'A creative typography playground with font experimentation and keyframe animations',
+      href: '/prototypes/type-playground',
+    },
     // Add your new prototypes here like this:
     // {
     //   title: 'Your new prototype',

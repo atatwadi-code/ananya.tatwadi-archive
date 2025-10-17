@@ -41,11 +41,11 @@ export const savingsHistory = [
 ];
 
 export const categoryColors = {
-  food: '#FF6384',
-  rent: '#36A2EB',
-  utilities: '#FFCE56',
-  entertainment: '#4BC0C0',
-  transportation: '#9966FF',
-  shopping: '#FF9F40',
-  healthcare: '#FF99CC'
+  food: '#ff9500',        // Apple Orange
+  rent: '#007aff',        // Apple Blue
+  utilities: '#ffcc00',   // Apple Yellow
+  entertainment: '#5856d6', // Apple Purple
+  transportation: '#34c759', // Apple Green
+  shopping: '#ff2d55',    // Apple Pink
+  healthcare: '#00c7be'   // Apple Teal
 }; 
