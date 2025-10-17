@@ -1973,6 +1973,179 @@
   color: #94a3b8;
 }
 
+/* New Timeline Classes */
+.timelineTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  line-height: 1;
+}
+
+.keyframeButton {
+  padding: 9px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: -0.2px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.lightMode .keyframeButton {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  color: #334155;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.lightMode .keyframeButton:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.darkMode .keyframeButton {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.darkMode .keyframeButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.keyframesHeader {
+  margin: 0 0 10px 0;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.lightMode .keyframesHeader {
+  color: #64748b;
+}
+
+.darkMode .keyframesHeader {
+  color: #94a3b8;
+}
+
+.keyframeTime {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+}
+
+.lightMode .keyframeTime {
+  color: #475569;
+}
+
+.darkMode .keyframeTime {
+  color: #cbd5e1;
+}
+
+.keyframeActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.keyframeGoToButton {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  line-height: 1;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightMode .keyframeGoToButton {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #334155;
+}
+
+.lightMode .keyframeGoToButton:hover {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+.darkMode .keyframeGoToButton {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+}
+
+.darkMode .keyframeGoToButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.keyframeDeleteButton {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 600;
+  line-height: 1;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightMode .keyframeDeleteButton {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #dc2626;
+}
+
+.lightMode .keyframeDeleteButton:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.3);
+  transform: translateY(-1px);
+}
+
+.darkMode .keyframeDeleteButton {
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  color: #f87171;
+}
+
+.darkMode .keyframeDeleteButton:hover {
+  background: rgba(248, 113, 113, 0.2);
+  border-color: rgba(248, 113, 113, 0.3);
+  transform: translateY(-1px);
+}
+
 .keyframeItem {
   display: flex;
   align-items: center;
@@ -2111,6 +2284,236 @@
 .darkMode .fontList::-webkit-scrollbar-thumb:hover,
 .darkMode .keyframeList::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.25);
+}
+
+/* ========================================
+   TIMELINE ERROR MODE STYLING
+   ======================================== */
+
+/* Error Mode Timeline Container */
+.errorMode .timelineContainer {
+  background-color: rgba(204, 255, 0, 0.95);
+  border-top: 2px solid #000000;
+  box-shadow: 0 -4px 0 rgba(0, 0, 0, 0.8);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.errorMode .timelineHeader {
+  background: rgba(0, 0, 0, 0.1);
+  border-bottom: 1px dotted #000000;
+  padding: 16px 20px;
+}
+
+.errorMode .timelineTitle {
+  font-family: 'Courier New', monospace !important;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: #000000;
+}
+
+.errorMode .playbackControls {
+  gap: 10px;
+}
+
+.errorMode .controlButton {
+  background: rgba(255, 255, 255, 0.3);
+  border: 2px solid #000000;
+  border-radius: 0;
+  color: #000000;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 8px 12px;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  min-height: 32px;
+  min-width: 32px;
+}
+
+.errorMode .controlButton::before {
+  display: none;
+}
+
+.errorMode .controlButton:hover {
+  background: rgba(0, 0, 0, 0.9);
+  color: #CCFF00;
+  transform: translateY(-1px);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 1);
+}
+
+.errorMode .controlButton:active {
+  transform: translateY(0);
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.errorMode .keyframeButton {
+  background: rgba(255, 255, 255, 0.3);
+  border: 2px solid #000000;
+  border-radius: 0;
+  color: #000000;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 8px 16px;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 1px;
+}
+
+.errorMode .keyframeButton:hover {
+  background: rgba(0, 0, 0, 0.9);
+  color: #CCFF00;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 1);
+  transform: translateY(-1px);
+}
+
+.errorMode .timeDisplay {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  color: #000000;
+  font-size: 12px;
+  letter-spacing: 1px;
+  min-width: 110px;
+}
+
+.errorMode .hideTimelineButton {
+  background: rgba(255, 255, 255, 0.3);
+  border: 2px solid #000000;
+  border-radius: 0;
+  color: #000000;
+  font-size: 16px;
+  padding: 6px 12px;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+  font-family: monospace;
+}
+
+.errorMode .hideTimelineButton:hover {
+  background: rgba(0, 0, 0, 0.9);
+  color: #CCFF00;
+}
+
+.errorMode .timeline {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.errorMode .timelineTrack {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid #000000;
+  border-radius: 0;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8) inset;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.errorMode .playhead {
+  background: #000000;
+  border-radius: 0;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.errorMode .keyframe {
+  filter: none;
+}
+
+.errorMode .keyframeDiamond {
+  background: #000000;
+  border-color: #CCFF00;
+  border-width: 2px;
+  box-shadow: 0 0 10px rgba(204, 255, 0, 0.8);
+}
+
+.errorMode .keyframeDiamond:hover {
+  background: #CCFF00;
+  border-color: #000000;
+  transform: scale(1.3);
+}
+
+.errorMode .deleteKeyframe {
+  background: #ff0000;
+  color: #000000;
+  border: 2px solid #000000;
+  border-radius: 0;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+}
+
+.errorMode .deleteKeyframe:hover {
+  background: #000000;
+  color: #ff0000;
+}
+
+.errorMode .keyframeList {
+  background: rgba(0, 0, 0, 0.1);
+  border-top: 1px dotted #000000;
+}
+
+.errorMode .keyframesHeader {
+  font-family: 'Courier New', monospace !important;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: #000000;
+  text-transform: uppercase;
+}
+
+.errorMode .keyframeItem {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid #000000;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.errorMode .keyframeItem:hover {
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+}
+
+.errorMode .keyframeTime {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  color: #000000;
+  letter-spacing: 1px;
+}
+
+.errorMode .keyframeGoToButton {
+  background: rgba(255, 255, 255, 0.3);
+  border: 2px solid #000000;
+  border-radius: 0;
+  color: #000000;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.errorMode .keyframeGoToButton:hover {
+  background: #000000;
+  color: #CCFF00;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 1);
+}
+
+.errorMode .keyframeDeleteButton {
+  background: rgba(255, 0, 0, 0.3);
+  border: 2px solid #000000;
+  border-radius: 0;
+  color: #000000;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 16px;
+  padding: 2px 8px;
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+.errorMode .keyframeDeleteButton:hover {
+  background: #ff0000;
+  color: #000000;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 1);
 }
 
 /* ========================================

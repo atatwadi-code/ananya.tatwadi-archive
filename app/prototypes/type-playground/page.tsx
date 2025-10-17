@@ -2291,121 +2291,49 @@ export default function TypePlayground() {
         {showTimeline && (
           <div className={styles.timelineContainer}>
             <div className={styles.timelineHeader}>
-              <h3>Timeline</h3>
+              <h3 className={styles.timelineTitle}>
+                {themeMode === 'error' ? 'TIMELINE' : 'Timeline'}
+              </h3>
               <div className={styles.playbackControls}>
-              <button
-                className={styles.controlButton}
-                onClick={() => {
-                  setCurrentTime(0);
-                  updateStyleAtTime(0);
-                }}
-                onMouseMove={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const x = e.clientX - rect.left;
-                  const y = e.clientY - rect.top;
-                  e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
-                  e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.setProperty('--mouse-x', `50%`);
-                  e.currentTarget.style.setProperty('--mouse-y', `50%`);
-                }}
-              >
-                ⏮
-              </button>
-              <button
-                className={styles.controlButton}
-                onClick={() => setIsPlaying(!isPlaying)}
-                onMouseMove={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const x = e.clientX - rect.left;
-                  const y = e.clientY - rect.top;
-                  e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
-                  e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.setProperty('--mouse-x', `50%`);
-                  e.currentTarget.style.setProperty('--mouse-y', `50%`);
-                }}
-              >
-                {isPlaying ? '⏸' : '▶'}
-              </button>
-              <button
-                className={styles.controlButton}
-                onClick={() => {
-                  addKeyframe();
-                  addCreatureMessage(`>> KEYFRAME_STORED [t=${currentTime.toFixed(2)}s]`);
-                }}
-                onMouseMove={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const x = e.clientX - rect.left;
-                  const y = e.clientY - rect.top;
-                  e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
-                  e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.setProperty('--mouse-x', `50%`);
-                  e.currentTarget.style.setProperty('--mouse-y', `50%`);
-                }}
-              >
-                {themeMode === 'error' ? '[ + KEYFRAME ]' : '+ Keyframe'}
-              </button>
-              <button
-                className={`${styles.controlButton} ${timelineIsPlaying ? styles.controlButtonActive : ''}`}
-                onClick={playTimeline}
-                disabled={timelineIsPlaying}
-                onMouseMove={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const x = e.clientX - rect.left;
-                  const y = e.clientY - rect.top;
-                  e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
-                  e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.setProperty('--mouse-x', `50%`);
-                  e.currentTarget.style.setProperty('--mouse-y', `50%`);
-                }}
-              >
-                {themeMode === 'error' ? '[ ▶ PLAY ]' : '▶ Play'}
-              </button>
-              <button
-                className={styles.controlButton}
-                onClick={stopTimeline}
-                disabled={!timelineIsPlaying}
-                onMouseMove={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const x = e.clientX - rect.left;
-                  const y = e.clientY - rect.top;
-                  e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
-                  e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.setProperty('--mouse-x', `50%`);
-                  e.currentTarget.style.setProperty('--mouse-y', `50%`);
-                }}
-              >
-                {themeMode === 'error' ? '[ ⏹ STOP ]' : '⏹ Stop'}
-              </button>
-              <div className={styles.timeDisplay}>
-                {currentTime.toFixed(2)}s / {duration}s
-              </div>
-              {timelineIsPlaying && (
-                <div className={styles.playbackProgressBar}>
-                  <div 
-                    className={styles.playbackProgressFill} 
-                    style={{ width: `${playbackProgress}%` }}
-                  />
+                <button
+                  className={styles.controlButton}
+                  onClick={() => {
+                    setCurrentTime(0);
+                    updateStyleAtTime(0);
+                  }}
+                  title="Reset to Start"
+                >
+                  {themeMode === 'error' ? '⏮' : '⏮'}
+                </button>
+                <button
+                  className={styles.controlButton}
+                  onClick={() => setIsPlaying(!isPlaying)}
+                  title={isPlaying ? 'Pause' : 'Play'}
+                >
+                  {isPlaying ? '⏸' : '▶'}
+                </button>
+                <button
+                  className={styles.keyframeButton}
+                  onClick={() => {
+                    addKeyframe();
+                    addCreatureMessage(`>> KEYFRAME_STORED [t=${currentTime.toFixed(2)}s]`);
+                  }}
+                  title="Add Keyframe"
+                >
+                  {themeMode === 'error' ? '+ KEYFRAME' : '+ Keyframe'}
+                </button>
+                <div className={styles.timeDisplay}>
+                  {currentTime.toFixed(2)}s / {duration}s
                 </div>
-              )}
-              <button
-                className={styles.hideTimelineButton}
-                onClick={() => setShowTimeline(false)}
-                title="Hide Timeline"
-              >
-                ▼
-              </button>
+                <button
+                  className={styles.hideTimelineButton}
+                  onClick={() => setShowTimeline(false)}
+                  title="Hide Timeline"
+                >
+                  {themeMode === 'error' ? '▼' : '▼'}
+                </button>
+              </div>
             </div>
-          </div>
 
           <div className={styles.timeline} onClick={handleTimelineClick}>
             <div className={styles.timelineTrack}>
@@ -2442,21 +2370,31 @@ export default function TypePlayground() {
           </div>
 
           <div className={styles.keyframeList}>
-            <h4>Keyframes</h4>
+            <h4 className={styles.keyframesHeader}>
+              {themeMode === 'error' ? 'KEYFRAMES' : 'KEYFRAMES'}
+            </h4>
             {keyframes.sort((a, b) => a.time - b.time).map(keyframe => (
               <div key={keyframe.id} className={styles.keyframeItem}>
-                <span>{keyframe.time.toFixed(2)}s</span>
-                <button
-                  onClick={() => {
-                    setCurrentTime(keyframe.time);
-                    updateStyleAtTime(keyframe.time);
-                  }}
-                >
-                  Go to
-                </button>
-                {keyframe.time > 0 && (
-                  <button onClick={() => deleteKeyframe(keyframe.id)}>Delete</button>
-                )}
+                <span className={styles.keyframeTime}>{keyframe.time.toFixed(2)}s</span>
+                <div className={styles.keyframeActions}>
+                  <button
+                    className={styles.keyframeGoToButton}
+                    onClick={() => {
+                      setCurrentTime(keyframe.time);
+                      updateStyleAtTime(keyframe.time);
+                    }}
+                  >
+                    {themeMode === 'error' ? 'GO TO' : 'Go to'}
+                  </button>
+                  {keyframe.time > 0 && (
+                    <button 
+                      className={styles.keyframeDeleteButton}
+                      onClick={() => deleteKeyframe(keyframe.id)}
+                    >
+                      {themeMode === 'error' ? '×' : 'Delete'}
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
