@@ -797,6 +797,7 @@ export default function TypePlayground() {
     let mouthOpen = true;
     let mouthOpenness = 0;
     let fontReady = false;
+    let debugLogged = false;
 
     // Load the selected font before rendering
     const fontString = `${currentStyle.fontWeight} ${currentStyle.fontSize}px "${selectedFont}"`;
@@ -828,16 +829,36 @@ export default function TypePlayground() {
       ctx.fillStyle = '#d7fc00';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+      // DEBUG: Log first render
+      if (!debugLogged) {
+        console.log('Feed Game Render:', {
+          canvasSize: { width: canvas.width, height: canvas.height },
+          letterCount: gameLetters.length,
+          letters: gameLetters.slice(0, 3),
+          fontSize: currentStyle.fontSize
+        });
+        debugLogged = true;
+      }
+
       // Draw letters - always render (with fallback if font not ready)
-      ctx.font = `${currentStyle.fontWeight} ${currentStyle.fontSize}px "${selectedFont}", sans-serif`;
+      ctx.font = `bold ${currentStyle.fontSize}px "${selectedFont}", Arial, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       // Make letters black and prominent against lime background
       ctx.fillStyle = '#000000';
       ctx.globalAlpha = 1;
-
+      
+      // Draw debug circles and letters
       gameLetters.forEach(letter => {
         if (!letter.consumed) {
+          // Draw a red circle to show letter position
+          ctx.fillStyle = '#FF0000';
+          ctx.beginPath();
+          ctx.arc(letter.x, letter.y, 5, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Draw the letter
+          ctx.fillStyle = '#000000';
           ctx.fillText(letter.char, letter.x, letter.y);
         }
       });
