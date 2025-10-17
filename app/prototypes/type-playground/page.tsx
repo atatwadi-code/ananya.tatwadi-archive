@@ -296,9 +296,13 @@ export default function TypePlayground() {
     
     // Spawn letters from text in a circular orbit pattern
     const letters = text.split('').filter(c => c.trim() !== '');
-    const centerX = 400; // Canvas center will be set dynamically in render
-    const centerY = 300;
-    const orbitRadius = 180; // Distance from center
+    
+    // Get canvas dimensions if available, otherwise use defaults
+    const canvas = feedGameCanvasRef.current;
+    const rect = canvas?.getBoundingClientRect();
+    const centerX = rect ? rect.width / 2 : 600;
+    const centerY = rect ? rect.height / 2 : 400;
+    const orbitRadius = Math.min(centerX, centerY) * 0.6; // 60% of smaller dimension
     
     const spawnedLetters = letters.map((char, i) => {
       const angle = (i / letters.length) * Math.PI * 2;
@@ -374,9 +378,10 @@ export default function TypePlayground() {
         // Respawn letters for continuous play in circular orbit
         const letters = text.split('').filter(c => c.trim() !== '');
         const canvas = feedGameCanvasRef.current;
-        const centerX = canvas ? canvas.width / 2 : 400;
-        const centerY = canvas ? canvas.height / 2 : 300;
-        const orbitRadius = 180;
+        const rect = canvas?.getBoundingClientRect();
+        const centerX = rect ? rect.width / 2 : 600;
+        const centerY = rect ? rect.height / 2 : 400;
+        const orbitRadius = rect ? Math.min(rect.width / 2, rect.height / 2) * 0.6 : 180;
         
         const spawnedLetters = letters.map((char, i) => {
           const angle = (i / letters.length) * Math.PI * 2;
@@ -823,23 +828,21 @@ export default function TypePlayground() {
       ctx.fillStyle = '#d7fc00';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Only render text if font is ready
-      if (fontReady) {
-        // Draw letters - use selected font and current style
-        ctx.font = `${currentStyle.fontWeight} ${currentStyle.fontSize}px "${selectedFont}"`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = currentStyle.color;
-        ctx.globalAlpha = currentStyle.opacity / 100;
+      // Draw letters - always render (with fallback if font not ready)
+      ctx.font = `${currentStyle.fontWeight} ${currentStyle.fontSize}px "${selectedFont}", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      // Make letters black and prominent against lime background
+      ctx.fillStyle = '#000000';
+      ctx.globalAlpha = 1;
 
-        gameLetters.forEach(letter => {
-          if (!letter.consumed) {
-            ctx.fillText(letter.char, letter.x, letter.y);
-          }
-        });
-        
-        ctx.globalAlpha = 1;
-      }
+      gameLetters.forEach(letter => {
+        if (!letter.consumed) {
+          ctx.fillText(letter.char, letter.x, letter.y);
+        }
+      });
+      
+      ctx.globalAlpha = 1;
 
       // Draw creature (Pac-Man)
       const creatureSize = 20 + (creatureGrowthLevel * 5);
@@ -891,13 +894,11 @@ export default function TypePlayground() {
       ctx.fill();
 
       // Draw minimal stats in corner
-      if (fontReady) {
-        ctx.font = `600 ${Math.max(12, currentStyle.fontSize * 0.4)}px "${selectedFont}"`;
-        ctx.fillStyle = currentStyle.color;
-        ctx.textAlign = 'left';
-        const remaining = gameLetters.filter(l => !l.consumed).length;
-        ctx.fillText(`LVL ${creatureGrowthLevel} | ${remaining} LEFT`, 15, 30);
-      }
+      ctx.font = `600 ${Math.max(12, currentStyle.fontSize * 0.4)}px "${selectedFont}", sans-serif`;
+      ctx.fillStyle = '#000000';
+      ctx.textAlign = 'left';
+      const remaining = gameLetters.filter(l => !l.consumed).length;
+      ctx.fillText(`LVL ${creatureGrowthLevel} | ${remaining} LEFT`, 15, 30);
 
       animationId = requestAnimationFrame(animate);
     };
@@ -1751,8 +1752,9 @@ export default function TypePlayground() {
 
     // Draw dots only where text exists (with interactive offsets)
     const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-    ctx.fillStyle = currentStyle.color;
-    ctx.globalAlpha = currentStyle.opacity / 100;
+    // Make dots prominent and black for better visibility
+    ctx.fillStyle = themeMode === 'dark' ? '#ffffff' : '#000000';
+    ctx.globalAlpha = 1;
 
     for (let x = gridSize; x < rect.width; x += gridSize) {
       for (let y = gridSize; y < rect.height; y += gridSize) {
@@ -1785,13 +1787,15 @@ export default function TypePlayground() {
           // Make dots glow when selected
           if (selectedDot === dotKey) {
             ctx.shadowBlur = 15;
-            ctx.shadowColor = currentStyle.color;
+            ctx.shadowColor = themeMode === 'dark' ? '#ffffff' : '#000000';
           } else {
             ctx.shadowBlur = 0;
           }
           
+          // Make dots larger and more prominent
+          const prominentDotSize = Math.max(dotSize, 4);
           ctx.beginPath();
-          ctx.arc(finalX, finalY, dotSize, 0, Math.PI * 2);
+          ctx.arc(finalX, finalY, prominentDotSize, 0, Math.PI * 2);
           ctx.fill();
         }
       }
@@ -1817,8 +1821,9 @@ export default function TypePlayground() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       ctx.font = `${currentStyle.fontWeight} ${currentStyle.fontSize}px "${selectedFont}"`;
-      ctx.fillStyle = currentStyle.color;
-      ctx.globalAlpha = currentStyle.opacity / 100;
+      // Make text prominent and black for better visibility
+      ctx.fillStyle = themeMode === 'dark' ? '#ffffff' : '#000000';
+      ctx.globalAlpha = 1;
       ctx.textBaseline = 'middle';
 
       const lines = text.split('\n');
