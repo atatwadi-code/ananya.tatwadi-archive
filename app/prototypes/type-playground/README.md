@@ -5,24 +5,39 @@ A browser-based creative playground for experimenting with typography, combining
 ## Features
 
 ### 🎮 Feed Type Creature Game Mode
-An experimental Pac-Man inspired game mode where you control a "type creature" that consumes alphabet letters!
+A simple Pac-Man inspired game where you control a creature that collects alphabet letters!
+
+**Layout:**
+```
++---------------------------------------------+
+|  LVL 1 | 8 LEFT                             |
+|                                             |
+|                  (A)     (R)                |
+|             (T)                     (O)     |
+|                                             |
+|                     🟡                     |
+|                                             |
+|              (G)                 (P)        |
+|                                             |
++---------------------------------------------+
+```
 
 **How to Play:**
-1. Click the `[ > FEED_TYPE_CREATURE_GAME ]` button to start
-2. Use **WASD** or **Arrow Keys** to move the creature
-3. Collect all the letters spawned from your text
-4. Watch the creature evolve and grow as you feed it
+1. Click `[ > FEED_TYPE_CREATURE_GAME ]` to start
+2. Use **Arrow Keys** to move the centered creature
+3. Collect letters arranged in a circular orbit around you
+4. Creature evolves and grows with each completion
 5. Press **ESC** to exit back to the playground
 
 **Game Features:**
-- Keyboard-controlled movement (WASD/Arrow Keys)
-- Collision detection with floating letters
-- Growth system - creature gets bigger with each evolution
-- Console messages tracking your progress
+- Centered creature with circular letter orbit
+- Simple arrow key controls (↑↓←→)
+- Growth system with level progression
+- Minimal HUD (Level | Letters Remaining)
 - Neon lime retro aesthetic
-- Continuous gameplay - letters respawn after completion
-- XP rewards and achievement unlocks
-- Evolution tracking with unique TYPE_FORM IDs
+- Continuous gameplay with respawning letters
+- XP rewards and achievement tracking
+- Does not interfere with typography rendering layer
 
 ### 🔤 Font Management
 - **Google Fonts Integration**: Browse and select from popular Google Fonts

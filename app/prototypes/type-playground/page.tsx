@@ -294,24 +294,31 @@ export default function TypePlayground() {
     setExperimentMode(false);
     setGridDotMode(false);
     
-    // Spawn letters from text
+    // Spawn letters from text in a circular orbit pattern
     const letters = text.split('').filter(c => c.trim() !== '');
-    const spawnedLetters = letters.map((char, i) => ({
-      char,
-      x: Math.random() * 700 + 50,
-      y: Math.random() * 400 + 100,
-      id: i,
-      consumed: false
-    }));
+    const centerX = 400; // Canvas center will be set dynamically in render
+    const centerY = 300;
+    const orbitRadius = 180; // Distance from center
+    
+    const spawnedLetters = letters.map((char, i) => {
+      const angle = (i / letters.length) * Math.PI * 2;
+      return {
+        char,
+        x: centerX + Math.cos(angle) * orbitRadius,
+        y: centerY + Math.sin(angle) * orbitRadius,
+        id: i,
+        consumed: false
+      };
+    });
     
     setGameLetters(spawnedLetters);
-    setCreatureGamePos({ x: 100, y: 100 });
+    setCreatureGamePos({ x: centerX, y: centerY }); // Center creature
     setCreatureDirection({ x: 0, y: 0 });
     setFeedCount(0);
     setIsEvolving(false);
     
     addCreatureMessage('>> FEED_TYPE_CREATURE_GAME ACTIVATED');
-    addCreatureMessage('>> USE ARROW KEYS / WASD TO MOVE');
+    addCreatureMessage('>> USE ARROW KEYS TO MOVE');
     addCreatureMessage(`>> CONSUME ${letters.length} LETTERS`);
     addXP(5, 'Started feed game');
   };
@@ -364,16 +371,25 @@ export default function TypePlayground() {
       
       setTimeout(() => {
         setIsEvolving(false);
-        // Respawn letters for continuous play
+        // Respawn letters for continuous play in circular orbit
         const letters = text.split('').filter(c => c.trim() !== '');
-        const spawnedLetters = letters.map((char, i) => ({
-          char,
-          x: Math.random() * 700 + 50,
-          y: Math.random() * 400 + 100,
-          id: Date.now() + i,
-          consumed: false
-        }));
+        const canvas = feedGameCanvasRef.current;
+        const centerX = canvas ? canvas.width / 2 : 400;
+        const centerY = canvas ? canvas.height / 2 : 300;
+        const orbitRadius = 180;
+        
+        const spawnedLetters = letters.map((char, i) => {
+          const angle = (i / letters.length) * Math.PI * 2;
+          return {
+            char,
+            x: centerX + Math.cos(angle) * orbitRadius,
+            y: centerY + Math.sin(angle) * orbitRadius,
+            id: Date.now() + i,
+            consumed: false
+          };
+        });
         setGameLetters(spawnedLetters);
+        setCreatureGamePos({ x: centerX, y: centerY }); // Re-center creature
         addCreatureMessage(`>> NEW CYCLE INITIATED`);
       }, 2000);
     }, 1000);
@@ -682,8 +698,8 @@ export default function TypePlayground() {
         return;
       }
       
-      // Movement keys
-      if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(key)) {
+      // Movement keys - Arrow keys only
+      if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
         e.preventDefault();
         setKeysPressed(prev => new Set(prev).add(key));
       }
@@ -716,10 +732,10 @@ export default function TypePlayground() {
       let dx = 0;
       let dy = 0;
 
-      if (keysPressed.has('arrowup') || keysPressed.has('w')) dy -= 1;
-      if (keysPressed.has('arrowdown') || keysPressed.has('s')) dy += 1;
-      if (keysPressed.has('arrowleft') || keysPressed.has('a')) dx -= 1;
-      if (keysPressed.has('arrowright') || keysPressed.has('d')) dx += 1;
+      if (keysPressed.has('arrowup')) dy -= 1;
+      if (keysPressed.has('arrowdown')) dy += 1;
+      if (keysPressed.has('arrowleft')) dx -= 1;
+      if (keysPressed.has('arrowright')) dx += 1;
 
       // Normalize diagonal movement
       if (dx !== 0 && dy !== 0) {
@@ -781,21 +797,15 @@ export default function TypePlayground() {
       ctx.fillStyle = '#d7fc00';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw letters
-      ctx.font = 'bold 36px "Press Start 2P", "VT323", monospace';
+      // Draw letters - simple and stationary
+      ctx.font = 'bold 32px "Press Start 2P", "VT323", monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#000000';
 
       gameLetters.forEach(letter => {
         if (!letter.consumed) {
-          // Floating effect
-          const floatOffset = Math.sin(Date.now() / 300 + letter.id) * 3;
-          
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-          ctx.fillStyle = '#000000';
-          ctx.fillText(letter.char, letter.x, letter.y + floatOffset);
-          ctx.shadowBlur = 0;
+          ctx.fillText(letter.char, letter.x, letter.y);
         }
       });
 
@@ -848,13 +858,12 @@ export default function TypePlayground() {
       ctx.arc(eyeX, eyeY, 3, 0, Math.PI * 2);
       ctx.fill();
 
-      // Draw stats
-      ctx.font = 'bold 16px "Press Start 2P", monospace';
+      // Draw minimal stats in corner
+      ctx.font = 'bold 14px "Press Start 2P", monospace';
       ctx.fillStyle = '#000000';
       ctx.textAlign = 'left';
-      ctx.fillText(`GROWTH LVL: ${creatureGrowthLevel}`, 20, 30);
-      ctx.fillText(`FED: ${feedCount}`, 20, 55);
-      ctx.fillText(`REMAINING: ${gameLetters.filter(l => !l.consumed).length}`, 20, 80);
+      const remaining = gameLetters.filter(l => !l.consumed).length;
+      ctx.fillText(`LVL ${creatureGrowthLevel} | ${remaining} LEFT`, 15, 25);
 
       animationId = requestAnimationFrame(animate);
     };
