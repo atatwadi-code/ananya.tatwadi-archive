@@ -142,14 +142,14 @@ export default function TypePlayground() {
     positionY: 50
   });
 
-  const animationRef = useRef<number>();
-  const startTimeRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
+  const startTimeRef = useRef<number | undefined>(undefined);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const textPreviewRef = useRef<HTMLDivElement>(null);
   const particleCanvasRef = useRef<HTMLCanvasElement>(null);
   const experimentCanvasRef = useRef<HTMLCanvasElement>(null);
   const gridDotCanvasRef = useRef<HTMLCanvasElement>(null);
-  const particleAnimationRef = useRef<number>();
+  const particleAnimationRef = useRef<number | undefined>(undefined);
   
   // Gamification Functions
   const addXP = (amount: number, reason: string) => {
