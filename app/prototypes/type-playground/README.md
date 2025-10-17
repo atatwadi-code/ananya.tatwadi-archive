@@ -2,7 +2,7 @@
 
 A browser-based creative playground for experimenting with typography, combining the power of Google Fonts with intuitive animation controls inspired by p5.js, Variable Fonts UI, and After Effects keyframes.
 
-## Features
+## Features.
 
 ### 🔤 Font Management
 - **Google Fonts Integration**: Browse and select from popular Google Fonts
