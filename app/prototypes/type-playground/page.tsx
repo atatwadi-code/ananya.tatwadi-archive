@@ -89,6 +89,18 @@ export default function TypePlayground() {
   const [eatenLetters, setEatenLetters] = useState<number[]>([]);
   const creatureCanvasRef = useRef<HTMLCanvasElement>(null);
   
+  // Feed Type Creature Game Mode
+  const [feedGameMode, setFeedGameMode] = useState(false);
+  const [gameLetters, setGameLetters] = useState<Array<{char: string, x: number, y: number, id: number, consumed: boolean}>>([]);
+  const [creatureGamePos, setCreatureGamePos] = useState({ x: 100, y: 100 });
+  const [creatureDirection, setCreatureDirection] = useState({ x: 0, y: 0 });
+  const [creatureSpeed, setCreatureSpeed] = useState(3);
+  const [creatureGrowthLevel, setCreatureGrowthLevel] = useState(1);
+  const [feedCount, setFeedCount] = useState(0);
+  const [isEvolving, setIsEvolving] = useState(false);
+  const [keysPressed, setKeysPressed] = useState<Set<string>>(new Set());
+  const feedGameCanvasRef = useRef<HTMLCanvasElement>(null);
+  
   // Glitch Mode
   const [glitchMode, setGlitchMode] = useState(false);
   const [glitchedText, setGlitchedText] = useState('');
@@ -271,6 +283,100 @@ export default function TypePlayground() {
     ];
     addCreatureMessage(messages[Math.floor(Math.random() * messages.length)]);
     addXP(5, 'Fed creature');
+  };
+
+  // Feed Game Mode Functions
+  const startFeedGame = () => {
+    setFeedGameMode(true);
+    setCreatureMode(false);
+    setEnableParticles(false);
+    setHoverGlowMode(false);
+    setExperimentMode(false);
+    setGridDotMode(false);
+    
+    // Spawn letters from text
+    const letters = text.split('').filter(c => c.trim() !== '');
+    const spawnedLetters = letters.map((char, i) => ({
+      char,
+      x: Math.random() * 700 + 50,
+      y: Math.random() * 400 + 100,
+      id: i,
+      consumed: false
+    }));
+    
+    setGameLetters(spawnedLetters);
+    setCreatureGamePos({ x: 100, y: 100 });
+    setCreatureDirection({ x: 0, y: 0 });
+    setFeedCount(0);
+    setIsEvolving(false);
+    
+    addCreatureMessage('>> FEED_TYPE_CREATURE_GAME ACTIVATED');
+    addCreatureMessage('>> USE ARROW KEYS / WASD TO MOVE');
+    addCreatureMessage(`>> CONSUME ${letters.length} LETTERS`);
+    addXP(5, 'Started feed game');
+  };
+
+  const exitFeedGame = () => {
+    setFeedGameMode(false);
+    setGameLetters([]);
+    setKeysPressed(new Set());
+    addCreatureMessage('>> EXIT_FEED_MODE');
+    addCreatureMessage('>> RETURNING TO PLAYGROUND...');
+  };
+
+  const checkCollision = (letterX: number, letterY: number) => {
+    const distance = Math.sqrt(
+      Math.pow(creatureGamePos.x - letterX, 2) + 
+      Math.pow(creatureGamePos.y - letterY, 2)
+    );
+    const creatureSize = 20 + (creatureGrowthLevel * 5);
+    return distance < creatureSize + 20;
+  };
+
+  const consumeLetter = (letterId: number, char: string) => {
+    setGameLetters(prev => 
+      prev.map(l => l.id === letterId ? {...l, consumed: true} : l)
+    );
+    setFeedCount(prev => prev + 1);
+    addCreatureMessage(`>> CONSUMED: '${char}'`);
+    addCreatureMessage('>> DIGESTING TYPE...');
+    addXP(10, 'Consumed letter');
+    increaseCombo();
+    
+    // Check if all letters consumed
+    const remainingLetters = gameLetters.filter(l => !l.consumed && l.id !== letterId);
+    if (remainingLetters.length === 0) {
+      evolveCreature();
+    }
+  };
+
+  const evolveCreature = () => {
+    setIsEvolving(true);
+    const nextLevel = creatureGrowthLevel + 1;
+    const outputId = String(nextLevel).padStart(3, '0');
+    
+    setTimeout(() => {
+      setCreatureGrowthLevel(nextLevel);
+      addCreatureMessage('>> FEED COMPLETE. TYPE CREATURE GROWTH +1');
+      addCreatureMessage(`>> OUTPUT_GENERATED: TYPE_FORM_#${outputId}`);
+      unlockAchievement(`TYPE_FORM_#${outputId}: Evolution ${nextLevel}`);
+      addXP(50, 'Creature evolved');
+      
+      setTimeout(() => {
+        setIsEvolving(false);
+        // Respawn letters for continuous play
+        const letters = text.split('').filter(c => c.trim() !== '');
+        const spawnedLetters = letters.map((char, i) => ({
+          char,
+          x: Math.random() * 700 + 50,
+          y: Math.random() * 400 + 100,
+          id: Date.now() + i,
+          consumed: false
+        }));
+        setGameLetters(spawnedLetters);
+        addCreatureMessage(`>> NEW CYCLE INITIATED`);
+      }, 2000);
+    }, 1000);
   };
 
   // Glitch Mode Functions
@@ -562,6 +668,203 @@ export default function TypePlayground() {
     return () => cancelAnimationFrame(animId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timelineIsPlaying, keyframes]);
+
+  // Keyboard controls for Feed Game Mode
+  useEffect(() => {
+    if (!feedGameMode) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+      
+      // Exit game on ESC
+      if (key === 'escape') {
+        exitFeedGame();
+        return;
+      }
+      
+      // Movement keys
+      if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(key)) {
+        e.preventDefault();
+        setKeysPressed(prev => new Set(prev).add(key));
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+      setKeysPressed(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(key);
+        return newSet;
+      });
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [feedGameMode]);
+
+  // Feed Game Loop - Movement and Collision
+  useEffect(() => {
+    if (!feedGameMode) return;
+
+    const gameLoop = setInterval(() => {
+      // Update creature direction based on pressed keys
+      let dx = 0;
+      let dy = 0;
+
+      if (keysPressed.has('arrowup') || keysPressed.has('w')) dy -= 1;
+      if (keysPressed.has('arrowdown') || keysPressed.has('s')) dy += 1;
+      if (keysPressed.has('arrowleft') || keysPressed.has('a')) dx -= 1;
+      if (keysPressed.has('arrowright') || keysPressed.has('d')) dx += 1;
+
+      // Normalize diagonal movement
+      if (dx !== 0 && dy !== 0) {
+        dx *= 0.707;
+        dy *= 0.707;
+      }
+
+      setCreatureDirection({ x: dx, y: dy });
+
+      // Update creature position
+      if (dx !== 0 || dy !== 0) {
+        setCreatureGamePos(prev => {
+          const canvas = feedGameCanvasRef.current;
+          if (!canvas) return prev;
+          
+          const creatureSize = 20 + (creatureGrowthLevel * 5);
+          let newX = prev.x + dx * creatureSpeed;
+          let newY = prev.y + dy * creatureSpeed;
+
+          // Keep within bounds
+          newX = Math.max(creatureSize, Math.min(canvas.width - creatureSize, newX));
+          newY = Math.max(creatureSize, Math.min(canvas.height - creatureSize, newY));
+
+          return { x: newX, y: newY };
+        });
+      }
+
+      // Check collisions with letters
+      gameLetters.forEach(letter => {
+        if (!letter.consumed && checkCollision(letter.x, letter.y)) {
+          consumeLetter(letter.id, letter.char);
+        }
+      });
+    }, 1000 / 60); // 60 FPS
+
+    return () => clearInterval(gameLoop);
+  }, [feedGameMode, keysPressed, gameLetters, creatureGamePos, creatureGrowthLevel, creatureSpeed]);
+
+  // Feed Game Canvas Rendering
+  useEffect(() => {
+    if (!feedGameMode) return;
+
+    const canvas = feedGameCanvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+
+    let animationId: number;
+    let mouthOpen = true;
+    let mouthOpenness = 0;
+
+    const animate = () => {
+      // Neon lime background
+      ctx.fillStyle = '#d7fc00';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw letters
+      ctx.font = 'bold 36px "Press Start 2P", "VT323", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      gameLetters.forEach(letter => {
+        if (!letter.consumed) {
+          // Floating effect
+          const floatOffset = Math.sin(Date.now() / 300 + letter.id) * 3;
+          
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+          ctx.fillStyle = '#000000';
+          ctx.fillText(letter.char, letter.x, letter.y + floatOffset);
+          ctx.shadowBlur = 0;
+        }
+      });
+
+      // Draw creature (Pac-Man)
+      const creatureSize = 20 + (creatureGrowthLevel * 5);
+      
+      // Animate mouth
+      mouthOpenness += mouthOpen ? 0.15 : -0.15;
+      if (mouthOpenness >= 0.8) mouthOpen = false;
+      if (mouthOpenness <= 0) mouthOpen = true;
+
+      const mouthAngle = mouthOpenness * 0.6;
+      
+      // Calculate facing direction
+      let facingAngle = 0;
+      if (creatureDirection.x !== 0 || creatureDirection.y !== 0) {
+        facingAngle = Math.atan2(creatureDirection.y, creatureDirection.x);
+      }
+
+      // Draw creature body with glow if evolving
+      if (isEvolving) {
+        const pulseSize = creatureSize + Math.sin(Date.now() / 100) * 10;
+        ctx.shadowBlur = 30;
+        ctx.shadowColor = '#FFD700';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(creatureGamePos.x, creatureGamePos.y, pulseSize, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      ctx.fillStyle = '#FFD700';
+      ctx.beginPath();
+      ctx.arc(
+        creatureGamePos.x,
+        creatureGamePos.y,
+        creatureSize,
+        mouthAngle + facingAngle,
+        (Math.PI * 2) - mouthAngle + facingAngle
+      );
+      ctx.lineTo(creatureGamePos.x, creatureGamePos.y);
+      ctx.closePath();
+      ctx.fill();
+
+      // Draw eye
+      ctx.fillStyle = '#000000';
+      const eyeX = creatureGamePos.x + Math.cos(facingAngle - 0.3) * (creatureSize * 0.5);
+      const eyeY = creatureGamePos.y + Math.sin(facingAngle - 0.3) * (creatureSize * 0.5);
+      ctx.beginPath();
+      ctx.arc(eyeX, eyeY, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw stats
+      ctx.font = 'bold 16px "Press Start 2P", monospace';
+      ctx.fillStyle = '#000000';
+      ctx.textAlign = 'left';
+      ctx.fillText(`GROWTH LVL: ${creatureGrowthLevel}`, 20, 30);
+      ctx.fillText(`FED: ${feedCount}`, 20, 55);
+      ctx.fillText(`REMAINING: ${gameLetters.filter(l => !l.consumed).length}`, 20, 80);
+
+      animationId = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      if (animationId) cancelAnimationFrame(animationId);
+    };
+  }, [feedGameMode, gameLetters, creatureGamePos, creatureDirection, creatureGrowthLevel, feedCount, isEvolving]);
 
   // Check video export support
   useEffect(() => {
@@ -2042,6 +2345,19 @@ export default function TypePlayground() {
                   {themeMode === 'error' ? '[ > ENTER_GLITCH_MODE ]' : '⚡ Enter Glitch Mode'}
                 </button>
 
+                <button
+                  className={`${styles.featureButton} ${feedGameMode ? styles.featureButtonActive : ''}`}
+                  onClick={() => {
+                    if (!feedGameMode) {
+                      startFeedGame();
+                    } else {
+                      exitFeedGame();
+                    }
+                  }}
+                >
+                  {themeMode === 'error' ? '[ > FEED_TYPE_CREATURE_GAME ]' : '🎮 Feed Game'}
+                </button>
+
                 {glitchMode && !glitchActive && (
                   <button
                     className={styles.activateGlitchButton}
@@ -2507,6 +2823,13 @@ export default function TypePlayground() {
           {creatureMode && (
             <canvas
               ref={creatureCanvasRef}
+              className={styles.particleCanvas}
+            />
+          )}
+          
+          {feedGameMode && (
+            <canvas
+              ref={feedGameCanvasRef}
               className={styles.particleCanvas}
             />
           )}

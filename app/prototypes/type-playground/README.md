@@ -2,7 +2,27 @@
 
 A browser-based creative playground for experimenting with typography, combining the power of Google Fonts with intuitive animation controls inspired by p5.js, Variable Fonts UI, and After Effects keyframes.
 
-## Features.
+## Features
+
+### 🎮 Feed Type Creature Game Mode
+An experimental Pac-Man inspired game mode where you control a "type creature" that consumes alphabet letters!
+
+**How to Play:**
+1. Click the `[ > FEED_TYPE_CREATURE_GAME ]` button to start
+2. Use **WASD** or **Arrow Keys** to move the creature
+3. Collect all the letters spawned from your text
+4. Watch the creature evolve and grow as you feed it
+5. Press **ESC** to exit back to the playground
+
+**Game Features:**
+- Keyboard-controlled movement (WASD/Arrow Keys)
+- Collision detection with floating letters
+- Growth system - creature gets bigger with each evolution
+- Console messages tracking your progress
+- Neon lime retro aesthetic
+- Continuous gameplay - letters respawn after completion
+- XP rewards and achievement unlocks
+- Evolution tracking with unique TYPE_FORM IDs
 
 ### 🔤 Font Management
 - **Google Fonts Integration**: Browse and select from popular Google Fonts
