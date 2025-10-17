@@ -62,7 +62,7 @@ export default function TypePlayground() {
   const [experimentMode, setExperimentMode] = useState(false);
   const [experimentIntensity, setExperimentIntensity] = useState(50);
   const [experimentRadius, setExperimentRadius] = useState(150);
-  const [experimentType, setExperimentType] = useState<'rotate' | 'shift' | 'scale' | 'skew'>('rotate');
+  const [experimentType, setExperimentType] = useState<'rotate' | 'shift' | 'scale' | 'skew' | 'wave' | 'explode' | 'magnetic' | 'bounce'>('rotate');
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   
   // Hover Glow Mode
@@ -71,16 +71,23 @@ export default function TypePlayground() {
   const [glowRadius, setGlowRadius] = useState(100);
   const [glowColor, setGlowColor] = useState('#00c8ff');
   
-  // Grid Dot Mode
+  // Grid Dot Mode (Interactive)
   const [gridDotMode, setGridDotMode] = useState(false);
   const [gridSize, setGridSize] = useState(20);
   const [dotSize, setDotSize] = useState(6);
+  const [dotOffsets, setDotOffsets] = useState<Map<string, {x: number, y: number}>>(new Map());
+  const [isDraggingDot, setIsDraggingDot] = useState(false);
+  const [selectedDot, setSelectedDot] = useState<string | null>(null);
   
-  // Type Creature Mode
+  // Type Creature Mode (Pacman)
   const [creatureMode, setCreatureMode] = useState(false);
   const [creatureMood, setCreatureMood] = useState(0);
   const [creatureMessages, setCreatureMessages] = useState<string[]>([]);
   const [lastParamChange, setLastParamChange] = useState(Date.now());
+  const [creaturePosition, setCreaturePosition] = useState({ x: 0, y: 0 });
+  const [creatureAngle, setCreatureAngle] = useState(0);
+  const [eatenLetters, setEatenLetters] = useState<number[]>([]);
+  const creatureCanvasRef = useRef<HTMLCanvasElement>(null);
   
   // Glitch Mode
   const [glitchMode, setGlitchMode] = useState(false);
@@ -396,6 +403,119 @@ export default function TypePlayground() {
     feedCreature();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStyle, selectedFont, text]);
+
+  // Pacman Creature Animation
+  useEffect(() => {
+    if (!creatureMode) return;
+    
+    const canvas = creatureCanvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+    
+    let animationId: number;
+    let mouthOpen = true;
+    let mouthOpenness = 0;
+    
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw text first (with some letters hidden if eaten)
+      ctx.font = `${currentStyle.fontWeight} ${currentStyle.fontSize}px "${selectedFont}"`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = currentStyle.color;
+      ctx.globalAlpha = currentStyle.opacity / 100;
+      
+      const centerX = canvas.width / 2 + (currentStyle.positionX - 50) * 10;
+      const centerY = canvas.height / 2 + (currentStyle.positionY - 50) * 10;
+      
+      // Draw letters (hide eaten ones)
+      const letters = text.split('');
+      const letterWidth = ctx.measureText('M').width;
+      const startX = centerX - (letters.length * letterWidth) / 2;
+      
+      letters.forEach((letter, index) => {
+        if (!eatenLetters.includes(index)) {
+          const x = startX + index * letterWidth;
+          ctx.fillText(letter, x, centerY);
+        }
+      });
+      
+      // Draw Pacman
+      const pacmanSize = 30;
+      const pacX = creaturePosition.x || centerX - 100;
+      const pacY = creaturePosition.y || centerY;
+      
+      // Animate mouth
+      mouthOpenness += mouthOpen ? 0.1 : -0.1;
+      if (mouthOpenness >= 0.8) mouthOpen = false;
+      if (mouthOpenness <= 0) mouthOpen = true;
+      
+      const mouthAngle = mouthOpenness * 0.5;
+      
+      // Draw Pacman body
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = themeMode === 'error' ? '#CCFF00' : '#FFD700';
+      ctx.beginPath();
+      ctx.arc(pacX, pacY, pacmanSize, mouthAngle + creatureAngle, (Math.PI * 2) - mouthAngle + creatureAngle);
+      ctx.lineTo(pacX, pacY);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Draw eye
+      ctx.fillStyle = '#000000';
+      const eyeX = pacX + Math.cos(creatureAngle - 0.3) * (pacmanSize * 0.4);
+      const eyeY = pacY + Math.sin(creatureAngle - 0.3) * (pacmanSize * 0.4);
+      ctx.beginPath();
+      ctx.arc(eyeX, eyeY, 4, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Move Pacman toward next letter
+      if (letters.length > eatenLetters.length) {
+        const nextLetterIndex = eatenLetters.length;
+        const targetX = startX + nextLetterIndex * letterWidth;
+        const targetY = centerY;
+        
+        const dx = targetX - pacX;
+        const dy = targetY - pacY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance > 5) {
+          setCreatureAngle(Math.atan2(dy, dx));
+          setCreaturePosition({
+            x: pacX + (dx / distance) * 2,
+            y: pacY + (dy / distance) * 2
+          });
+        } else {
+          // Eat the letter
+          setEatenLetters(prev => [...prev, nextLetterIndex]);
+          addCreatureMessage(`>> *CHOMP* LETTER CONSUMED`);
+          feedCreature();
+        }
+      } else {
+        // All letters eaten - reset
+        setTimeout(() => {
+          setEatenLetters([]);
+          setCreaturePosition({ x: centerX - 100, y: centerY });
+          addCreatureMessage('>> TYPE_CREATURE: SATISFIED! RESTARTING...');
+        }, 1000);
+      }
+      
+      animationId = requestAnimationFrame(animate);
+    };
+    
+    animate();
+    
+    return () => {
+      if (animationId) cancelAnimationFrame(animationId);
+    };
+  }, [creatureMode, text, selectedFont, currentStyle, creaturePosition, creatureAngle, eatenLetters, themeMode]);
 
   // Check if glitch is restored
   useEffect(() => {
@@ -1266,7 +1386,7 @@ export default function TypePlayground() {
       tempCtx.restore();
     });
 
-    // Draw dots only where text exists
+    // Draw dots only where text exists (with interactive offsets)
     const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
     ctx.fillStyle = currentStyle.color;
     ctx.globalAlpha = currentStyle.opacity / 100;
@@ -1293,15 +1413,30 @@ export default function TypePlayground() {
         }
         
         if (hasText) {
+          // Apply offset if dot has been dragged
+          const dotKey = `${x}-${y}`;
+          const offset = dotOffsets.get(dotKey) || { x: 0, y: 0 };
+          const finalX = x + offset.x;
+          const finalY = y + offset.y;
+          
+          // Make dots glow when selected
+          if (selectedDot === dotKey) {
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = currentStyle.color;
+          } else {
+            ctx.shadowBlur = 0;
+          }
+          
           ctx.beginPath();
-          ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+          ctx.arc(finalX, finalY, dotSize, 0, Math.PI * 2);
           ctx.fill();
         }
       }
     }
 
     ctx.globalAlpha = 1;
-  }, [text, selectedFont, currentStyle, gridDotMode, gridSize, dotSize, themeMode]);
+    ctx.shadowBlur = 0;
+  }, [text, selectedFont, currentStyle, gridDotMode, gridSize, dotSize, themeMode, dotOffsets, selectedDot]);
 
   // Render experiment mode to canvas
   useEffect(() => {
@@ -1374,6 +1509,39 @@ export default function TypePlayground() {
               const skewAmount = effectAmount * 0.7;
               ctx.transform(1, skewAmount, skewAmount, 1, 0, 0);
               break;
+            case 'wave':
+              // Wave motion - characters move in a sine wave
+              const waveOffset = Math.sin((Date.now() / 500) + (charCenterX / 50)) * effectAmount * 30;
+              ctx.translate(0, waveOffset);
+              break;
+            case 'explode':
+              // Explode outward from cursor
+              const explodeAngle = Math.atan2(charCenterY - cursorPos.y, charCenterX - cursorPos.x);
+              const explodeAmount = effectAmount * 100;
+              ctx.translate(
+                Math.cos(explodeAngle) * explodeAmount,
+                Math.sin(explodeAngle) * explodeAmount
+              );
+              ctx.rotate(effectAmount * Math.PI * 2);
+              break;
+            case 'magnetic':
+              // Magnetic pull toward cursor
+              const magnetAngle = Math.atan2(dy, dx);
+              const pullAmount = effectAmount * 40;
+              ctx.translate(
+                Math.cos(magnetAngle) * pullAmount,
+                Math.sin(magnetAngle) * pullAmount
+              );
+              const spinAmount = effectAmount * Math.PI * 0.3;
+              ctx.rotate(spinAmount);
+              break;
+            case 'bounce':
+              // Bouncy elastic effect
+              const bounceScale = 1 + Math.abs(Math.sin((Date.now() / 200) + charCenterX / 30)) * effectAmount;
+              ctx.scale(bounceScale, bounceScale);
+              const jiggle = Math.sin((Date.now() / 100) + charCenterX / 20) * effectAmount * 10;
+              ctx.translate(0, jiggle);
+              break;
           }
           
           // Apply global transformations
@@ -1392,7 +1560,13 @@ export default function TypePlayground() {
       ctx.globalAlpha = 1;
     };
 
-    drawExperimentText();
+    // Continuous animation for wave and bounce
+    if (experimentType === 'wave' || experimentType === 'bounce') {
+      const animationId = requestAnimationFrame(() => drawExperimentText());
+      return () => cancelAnimationFrame(animationId);
+    } else {
+      drawExperimentText();
+    }
   }, [text, selectedFont, currentStyle, experimentMode, experimentIntensity, experimentRadius, experimentType, cursorPos]);
 
   return (
@@ -2030,12 +2204,16 @@ export default function TypePlayground() {
                     <select
                       className={styles.select}
                       value={experimentType}
-                      onChange={(e) => setExperimentType(e.target.value as 'rotate' | 'shift' | 'scale' | 'skew')}
+                      onChange={(e) => setExperimentType(e.target.value as 'rotate' | 'shift' | 'scale' | 'skew' | 'wave' | 'explode' | 'magnetic' | 'bounce')}
                     >
                       <option value="rotate">Rotate</option>
                       <option value="shift">Shift Away</option>
                       <option value="scale">Scale</option>
                       <option value="skew">Skew</option>
+                      <option value="wave">🌊 Wave</option>
+                      <option value="explode">💥 Explode</option>
+                      <option value="magnetic">🧲 Magnetic</option>
+                      <option value="bounce">🎾 Bounce</option>
                     </select>
                   </div>
 
@@ -2091,6 +2269,16 @@ export default function TypePlayground() {
                       className={styles.slider}
                     />
                   </div>
+                  
+                  <button
+                    className={styles.resetDotsButton}
+                    onClick={() => {
+                      setDotOffsets(new Map());
+                      addCreatureMessage('>> DOTS RESET TO ORIGINAL POSITIONS');
+                    }}
+                  >
+                    {themeMode === 'error' ? '[ RESET DOTS ]' : '🔄 Reset Dots'}
+                  </button>
                 </div>
               )}
             </div>
@@ -2254,6 +2442,71 @@ export default function TypePlayground() {
           {gridDotMode && (
             <canvas
               ref={gridDotCanvasRef}
+              className={styles.particleCanvas}
+              style={{ cursor: isDraggingDot ? 'grabbing' : 'grab' }}
+              onMouseDown={(e) => {
+                const canvas = gridDotCanvasRef.current;
+                if (!canvas) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // Find closest dot
+                let closestDot = null;
+                let closestDist = Infinity;
+                
+                for (let gx = gridSize; gx < rect.width; gx += gridSize) {
+                  for (let gy = gridSize; gy < rect.height; gy += gridSize) {
+                    const dotKey = `${gx}-${gy}`;
+                    const offset = dotOffsets.get(dotKey) || { x: 0, y: 0 };
+                    const dotX = gx + offset.x;
+                    const dotY = gy + offset.y;
+                    const dist = Math.sqrt((x - dotX) ** 2 + (y - dotY) ** 2);
+                    
+                    if (dist < dotSize + 5 && dist < closestDist) {
+                      closestDist = dist;
+                      closestDot = dotKey;
+                    }
+                  }
+                }
+                
+                if (closestDot) {
+                  setSelectedDot(closestDot);
+                  setIsDraggingDot(true);
+                }
+              }}
+              onMouseMove={(e) => {
+                if (!isDraggingDot || !selectedDot) return;
+                const canvas = gridDotCanvasRef.current;
+                if (!canvas) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const [origX, origY] = selectedDot.split('-').map(Number);
+                setDotOffsets(prev => {
+                  const newMap = new Map(prev);
+                  newMap.set(selectedDot, {
+                    x: x - origX,
+                    y: y - origY
+                  });
+                  return newMap;
+                });
+              }}
+              onMouseUp={() => {
+                setIsDraggingDot(false);
+                setSelectedDot(null);
+              }}
+              onMouseLeave={() => {
+                setIsDraggingDot(false);
+                setSelectedDot(null);
+              }}
+            />
+          )}
+          
+          {creatureMode && (
+            <canvas
+              ref={creatureCanvasRef}
               className={styles.particleCanvas}
             />
           )}
