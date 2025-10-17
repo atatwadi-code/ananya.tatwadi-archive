@@ -797,17 +797,20 @@ export default function TypePlayground() {
       ctx.fillStyle = '#d7fc00';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw letters - simple and stationary
-      ctx.font = 'bold 32px "Press Start 2P", "VT323", monospace';
+      // Draw letters - use selected font and current style
+      ctx.font = `${currentStyle.fontWeight} ${currentStyle.fontSize}px "${selectedFont}"`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#000000';
+      ctx.fillStyle = currentStyle.color;
+      ctx.globalAlpha = currentStyle.opacity / 100;
 
       gameLetters.forEach(letter => {
         if (!letter.consumed) {
           ctx.fillText(letter.char, letter.x, letter.y);
         }
       });
+      
+      ctx.globalAlpha = 1;
 
       // Draw creature (Pac-Man)
       const creatureSize = 20 + (creatureGrowthLevel * 5);
@@ -859,11 +862,11 @@ export default function TypePlayground() {
       ctx.fill();
 
       // Draw minimal stats in corner
-      ctx.font = 'bold 14px "Press Start 2P", monospace';
-      ctx.fillStyle = '#000000';
+      ctx.font = `600 ${Math.max(12, currentStyle.fontSize * 0.4)}px "${selectedFont}"`;
+      ctx.fillStyle = currentStyle.color;
       ctx.textAlign = 'left';
       const remaining = gameLetters.filter(l => !l.consumed).length;
-      ctx.fillText(`LVL ${creatureGrowthLevel} | ${remaining} LEFT`, 15, 25);
+      ctx.fillText(`LVL ${creatureGrowthLevel} | ${remaining} LEFT`, 15, 30);
 
       animationId = requestAnimationFrame(animate);
     };
@@ -873,7 +876,7 @@ export default function TypePlayground() {
     return () => {
       if (animationId) cancelAnimationFrame(animationId);
     };
-  }, [feedGameMode, gameLetters, creatureGamePos, creatureDirection, creatureGrowthLevel, feedCount, isEvolving]);
+  }, [feedGameMode, gameLetters, creatureGamePos, creatureDirection, creatureGrowthLevel, feedCount, isEvolving, selectedFont, currentStyle]);
 
   // Check video export support
   useEffect(() => {
