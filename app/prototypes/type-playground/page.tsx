@@ -937,6 +937,18 @@ export default function TypePlayground() {
       link.href = `https://api.fontshare.com/v2/css?f[]=${selectedFont.toLowerCase().replace(/\s+/g, '-')}@400,700&display=swap`;
       link.rel = 'stylesheet';
       document.head.appendChild(link);
+      
+      // Wait for font to load
+      link.onload = () => {
+        document.fonts.ready.then(() => {
+          // Force re-render by triggering a small style update
+          const preview = textPreviewRef.current;
+          if (preview) {
+            preview.style.fontFamily = `"${selectedFont}", sans-serif`;
+          }
+        });
+      };
+      
       return () => {
         document.head.removeChild(link);
       };
@@ -946,6 +958,18 @@ export default function TypePlayground() {
       link.href = `https://fonts.googleapis.com/css2?family=${selectedFont.replace(/\s+/g, '+')}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
       link.rel = 'stylesheet';
       document.head.appendChild(link);
+      
+      // Wait for font to load
+      link.onload = () => {
+        document.fonts.ready.then(() => {
+          // Force re-render by triggering a small style update
+          const preview = textPreviewRef.current;
+          if (preview) {
+            preview.style.fontFamily = `"${selectedFont}", sans-serif`;
+          }
+        });
+      };
+      
       return () => {
         document.head.removeChild(link);
       };
@@ -2686,7 +2710,7 @@ export default function TypePlayground() {
               ref={textPreviewRef}
               className={`${styles.textPreview} ${creatureMode ? styles.creatureText : ''} ${glitchActive ? styles.glitchText : ''}`}
               style={{
-                fontFamily: selectedFont,
+                fontFamily: `"${selectedFont}", sans-serif`,
                 fontSize: `${currentStyle.fontSize}px`,
                 fontWeight: currentStyle.fontWeight,
                 letterSpacing: `${currentStyle.letterSpacing}em`,
